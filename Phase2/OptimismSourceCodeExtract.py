@@ -13,8 +13,8 @@ import csv
 # =========================================================
 
 API_KEY      = "SCPTH137HA89YQWEVJ5NN8YSZ75ICRBZW2"
-ADDRESS_FILE = "/content/Contract Address Optimisim.csv"
-OUTPUT_FILE  = "/content/OptimismContracts2.json"
+ADDRESS_FILE = "Contract Address Optimisim.csv"
+OUTPUT_FILE  = "OptimismContracts2.json"
 API_URL      = "https://api.etherscan.io/v2/api"
 CHAIN_ID     = 10  # Optimism
 
