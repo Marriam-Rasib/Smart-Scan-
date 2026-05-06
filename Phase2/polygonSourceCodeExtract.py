@@ -1,67 +1,88 @@
 import time
 import requests
 import json
+import pandas as pd
 
-API_KEY = "api_key"
-ADDRESS_FILE = "addressesPolygon.txt"
+API_KEY = "SCPTH137HA89YQWEVJ5NN8YSZ75ICRBZW2"
+ADDRESS_FILE = "Contract Address polygon.csv"
 OUTPUT_FILE = "PolygonContracts.json"
-API_LINK = "https://api.polygonscan.com/api"
+API_LINK = "https://api.etherscan.io/v2/api"
 
-#function to read addresses
-def get_contracts_address(file_path):
-    with open(file_path, "r") as f:
-        addresses = [line.strip() for line in f.readlines()]
-    return addresses
+# =========================
+# READ CSV CORRECTLY
+# =========================
+df = pd.read_csv(ADDRESS_FILE)
 
-#function to get Smart Contracts Data
+print(df.head())
+
+# CHANGE COLUMN NAME IF NEEDED
+addresses = df["ContractAddress"].dropna().tolist()
+
+print(f"Total contracts: {len(addresses)}")
+
+# =========================
+# FETCH DATA
+# =========================
 def read_contracts_data(address):
+
     params = {
         "module": "contract",
         "action": "getsourcecode",
         "address": address,
+        "chainid": 137,   # Polygon mainnet
         "apikey": API_KEY
     }
-    response = requests.get(API_LINK, params=params)
-    if response.status_code == 200:
+
+    try:
+        response = requests.get(API_LINK, params=params)
+        response.raise_for_status()
         return response.json()
-    else:
-        print(f"Error fetching data for {address}: {response.status_code}")
+
+    except Exception as e:
+        print(f"Error for {address}: {e}")
         return None
 
-#function to store data
-def store_contracts_data(data, file_path):   
-    with open(file_path, "w") as f:
-        json.dump(data, f, indent=4)
+# =========================
+# MAIN
+# =========================
+contract_data = []
 
-def main():
+for i, address in enumerate(addresses):
 
-    addresses = get_contracts_address(ADDRESS_FILE)
-    contract_data = []
+    print(f"\nProcessing {i+1}/{len(addresses)}: {address}")
 
-    print(f"Fetching data for {len(addresses)} contracts...")
+    data = read_contracts_data(address)
 
-    for i, address in enumerate(addresses):
-        print(f"Fetching contract {i+1}/{len(addresses)}: {address}")
-        data = read_contracts_data(address)
+    if data and isinstance(data.get("result"), list):
 
-        if data:
+        result = data["result"]
+
+        if len(result) > 0 and isinstance(result[0], dict):
+
+            r = result[0]
+
             contract_data.append({
                 "address": address,
-                "source_code": data.get("result", [{}])[0].get("SourceCode", ""),
-                "abi": data.get("result", [{}])[0].get("ABI", ""),
-                "contract_name": data.get("result", [{}])[0].get("ContractName", ""),
-                "compiler_version": data.get("result", [{}])[0].get("CompilerVersion", ""),
-                "optimization_used": data.get("result", [{}])[0].get("OptimizationUsed", ""),
-                "metadata": data.get("result", [{}])[0].get("Metadata", "")
+                "source_code": r.get("SourceCode", ""),
+                "abi": r.get("ABI", ""),
+                "contract_name": r.get("ContractName", ""),
+                "compiler_version": r.get("CompilerVersion", ""),
+                "optimization_used": r.get("OptimizationUsed", ""),
+                "metadata": r.get("Metadata", "")
             })
 
-        # Respect API rate limit (5 requests per second)
-        time.sleep(0.2)
+        else:
+            print("Invalid result format")
 
-    # Save fetched data to a file
-    store_contracts_data(contract_data, OUTPUT_FILE)
-    print(f"Contract data saved to {OUTPUT_FILE}")
+    else:
+        print("Bad API response:", data)
 
-if __name__ == "__main__":
-    main()
+    time.sleep(0.2)
 
+# =========================
+# SAVE OUTPUT
+# =========================
+with open(OUTPUT_FILE, "w") as f:
+    json.dump(contract_data, f, indent=4)
+
+print(f"\nSaved {len(contract_data)} contracts → {OUTPUT_FILE}")
