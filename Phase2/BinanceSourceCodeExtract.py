@@ -18,7 +18,7 @@ BASE_URL = "https://api.bscscan.com/api"
 # LOAD CSV FILE
 # =========================================================
 
-csv_file_path = "verified-contract-address.csv"
+csv_file_path = "/data/verified-contract-address.csv"
 
 # Read CSV
 data = pd.read_csv(csv_file_path, header=1)
