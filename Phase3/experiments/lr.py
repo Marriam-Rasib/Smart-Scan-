@@ -14,10 +14,12 @@ def run_logistic_regression(X, y):
         stratify=y
     )
 
-    model = LogisticRegression(
-        max_iter=2000,
-        n_jobs=-1
-    )
+   model = LogisticRegression(
+    max_iter=3000,
+    class_weight="balanced",
+    n_jobs=-1,
+    random_state=42
+)
 
     print("\nTraining Logistic Regression...")
 
