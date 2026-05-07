@@ -14,7 +14,11 @@ def run_svm(X, y):
         stratify=y
     )
 
-    model = LinearSVC()
+   model = LinearSVC(
+    class_weight="balanced",
+    max_iter=5000,
+    random_state=42
+)
 
     print("\nTraining SVM...")
 
