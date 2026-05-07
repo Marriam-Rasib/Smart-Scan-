@@ -3,24 +3,34 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-def plot_class_distribution(y, save_path="outputs/figures/class_distribution.png"):
+def plot_class_distribution(
+    y,
+    class_names=None,
+    save_path="outputs/figures/class_distribution.png"
+):
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     counts = pd.Series(y).value_counts().sort_index()
 
-    plt.figure(figsize=(8, 5))
-    bars = plt.bar(counts.index.astype(str), counts.values)
+    if class_names is None:
+        labels = counts.index.astype(str)
+    else:
+        labels = [class_names[i] for i in counts.index]
 
-    plt.title("Dataset Class Distribution", fontsize=14)
-    plt.xlabel("Class")
-    plt.ylabel("Number of Samples")
+    plt.figure(figsize=(10, 5))
+    bars = plt.bar(labels, counts.values)
+
+    plt.title("Contract Category Distribution", fontsize=14)
+    plt.xlabel("Category")
+    plt.ylabel("Number of Contracts")
+    plt.xticks(rotation=25)
 
     for bar in bars:
         height = bar.get_height()
         plt.text(
             bar.get_x() + bar.get_width() / 2,
             height,
-            f"{int(height)}",
+            str(int(height)),
             ha="center",
             va="bottom"
         )
