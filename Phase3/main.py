@@ -4,9 +4,9 @@ from utils.preprocessing import vectorize_text
 
 from utils.model_utils import save_model
 
-from experiments.random_forest import run_random_forest
-from experiments.svm_classifier import run_svm
-from experiments.logistic_regression import run_logistic_regression
+from experiments.random_forests import run_random_forest
+from experiments.svm import run_svm
+from experiments.lr import run_logistic_regression
 
 
 def main():
