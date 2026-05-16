@@ -2,6 +2,7 @@
 <html>
 <head>
 <style>
+ 
 body {
     background:#020617;
     color:white;
@@ -28,15 +29,18 @@ body {
 </div>
 
 <div class="card">
-<h2>⚠️ Vulnerability Detection</h2>
+ <h2>⚠️ Vulnerability Detection</h2>
 
-{% if vulnerability == "Safe" %}
-<p class="safe">✅ Safe Contract</p>
-{% else %}
-<p class="danger">❌ {{ vulnerability }}</p>
+<p>Status: {{ vuln_status }}</p>
+<p>Top Issue: {{ vulnerability }}</p>
 <p>Confidence: {{ confidence }}%</p>
-{% endif %}
 
+<h3>All Scores:</h3>
+<ul>
+  {% for key, value in all_scores.items() %}
+    <li>{{ key }} → {{ value }}%</li>
+  {% endfor %}
+</ul>
 </div>
 
 </body>
