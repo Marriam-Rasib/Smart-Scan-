@@ -1,11 +1,9 @@
-%%writefile /content/Smart-Scan-/Phase_4/inference/vuln_predict.py
-
 import torch
 import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer
 
 # ==========================================
-# LABELS
+# SWC LABELS + HUMAN READABLE NAMES
 # ==========================================
 SWC_LABELS = [
     'SWC-101',
@@ -17,6 +15,17 @@ SWC_LABELS = [
     'SWC-116',
     'SWC-128'
 ]
+
+SWC_NAMES = {
+    'SWC-101': 'Integer Overflow / Underflow',
+    'SWC-104': 'Unchecked Call Return Value',
+    'SWC-107': 'Reentrancy',
+    'SWC-113': 'DoS with Failed Call',
+    'SWC-114': 'Transaction Order Dependence',
+    'SWC-115': 'Authorization through tx.origin',
+    'SWC-116': 'Block Timestamp Manipulation',
+    'SWC-128': 'DoS With Block Gas Limit'
+}
 
 NUM_LABELS = len(SWC_LABELS)
 
@@ -60,6 +69,8 @@ device = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
 )
 
+print(f"Using device: {device}")
+
 # ==========================================
 # TOKENIZER
 # ==========================================
@@ -68,7 +79,7 @@ tokenizer = AutoTokenizer.from_pretrained(
 )
 
 # ==========================================
-# MODEL LOAD
+# LOAD TRAINED MODEL
 # ==========================================
 model = CodeBERTVulnDetector(num_labels=NUM_LABELS)
 
@@ -83,8 +94,7 @@ model.to(device)
 
 model.eval()
 
-print("✅ Vulnerability model loaded!")
-
+print("✅ Vulnerability model loaded successfully!")
 
 # ==========================================
 # PREDICTION FUNCTION
@@ -93,6 +103,9 @@ def predict_vulnerability(code, threshold=0.3):
 
     try:
 
+        # ==================================
+        # TOKENIZATION
+        # ==================================
         encoding = tokenizer(
             code,
             max_length=512,
@@ -105,6 +118,9 @@ def predict_vulnerability(code, threshold=0.3):
 
         attention_mask = encoding["attention_mask"].to(device)
 
+        # ==================================
+        # MODEL PREDICTION
+        # ==================================
         with torch.no_grad():
 
             logits = model(
@@ -116,6 +132,9 @@ def predict_vulnerability(code, threshold=0.3):
                 logits
             ).cpu().numpy()[0]
 
+        # ==================================
+        # STORE RESULTS
+        # ==================================
         all_scores = {}
 
         detected = []
@@ -124,12 +143,24 @@ def predict_vulnerability(code, threshold=0.3):
 
             prob = float(prob)
 
-            all_scores[label] = round(prob * 100, 2)
+            # Human readable scores
+            readable_label = f"{label} - {SWC_NAMES[label]}"
 
+            all_scores[readable_label] = round(
+                prob * 100,
+                2
+            )
+
+            # Threshold check
             if prob > threshold:
 
-                detected.append((label, prob))
+                detected.append(
+                    (label, prob)
+                )
 
+        # ==================================
+        # VULNERABILITIES FOUND
+        # ==================================
         if detected:
 
             detected.sort(
@@ -141,25 +172,58 @@ def predict_vulnerability(code, threshold=0.3):
 
             return {
                 "status": "Vulnerable",
-                "top_vulnerability": top_label,
-                "confidence": round(top_prob * 100, 2),
-                "all_scores": all_scores
+
+                "top_vulnerability":
+                    SWC_NAMES[top_label],
+
+                "swc_id":
+                    top_label,
+
+                "confidence":
+                    round(top_prob * 100, 2),
+
+                "all_scores":
+                    all_scores
             }
 
+        # ==================================
+        # SAFE CONTRACT
+        # ==================================
         return {
             "status": "Safe",
-            "top_vulnerability": "None",
-            "confidence": 0,
-            "all_scores": all_scores
+
+            "top_vulnerability":
+                "None",
+
+            "swc_id":
+                "N/A",
+
+            "confidence":
+                0,
+
+            "all_scores":
+                all_scores
         }
 
+    # ======================================
+    # ERROR HANDLING
+    # ======================================
     except Exception as e:
 
         print("❌ Vulnerability Prediction Error:", e)
 
         return {
             "status": "Error",
-            "top_vulnerability": "Error",
-            "confidence": 0,
-            "all_scores": {}
+
+            "top_vulnerability":
+                "Error",
+
+            "swc_id":
+                "Error",
+
+            "confidence":
+                0,
+
+            "all_scores":
+                {}
         }
