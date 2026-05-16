@@ -1,17 +1,43 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <style>
-body {background:#020617;color:white;padding:30px;}
-.card {background:#1e293b;padding:20px;border-radius:10px;}
+body {
+    background:#020617;
+    color:white;
+    font-family:Arial;
+    padding:30px;
+}
+.card {
+    background:#1e293b;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+.safe {color:#22c55e;}
+.danger {color:#ef4444;}
 </style>
 </head>
 <body>
-<h1>Result</h1>
+
+<h1>📊 Analysis Result</h1>
+
 <div class="card">
-<h2>Category</h2>
+<h2>📂 Contract Category</h2>
 <p>{{ category }}</p>
 </div>
+
+<div class="card">
+<h2>⚠️ Vulnerability Detection</h2>
+
+{% if vulnerability == "Safe" %}
+<p class="safe">✅ Safe Contract</p>
+{% else %}
+<p class="danger">❌ {{ vulnerability }}</p>
+<p>Confidence: {{ confidence }}%</p>
+{% endif %}
+
+</div>
+
 </body>
 </html>
