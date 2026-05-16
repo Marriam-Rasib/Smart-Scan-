@@ -1,21 +1,46 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <title>Smart Analyzer</title>
 <style>
-body {background:#0f172a;color:white;text-align:center;padding:50px;}
-.box {background:#1e293b;padding:30px;border-radius:10px;display:inline-block;}
-button {padding:10px 20px;background:#38bdf8;border:none;}
+body {
+    background: linear-gradient(135deg, #0f172a, #020617);
+    color: white;
+    text-align: center;
+    font-family: Arial;
+}
+.box {
+    background: #1e293b;
+    padding: 40px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-top: 100px;
+}
+button {
+    padding: 10px 25px;
+    background: #38bdf8;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+input {
+    padding: 10px;
+}
 </style>
 </head>
 <body>
 <div class="box">
-<h1>Smart Contract Classifier</h1>
+<h1> Smart Contract Analyzer</h1>
+
 <form action="/analyze" method="post" enctype="multipart/form-data">
-<input type="file" name="contract" required><br><br>
+<input type="file" name="contract" accept=".sol,.txt" required><br><br>
 <button>Analyze</button>
 </form>
+
+<p style="font-size:12px;color:gray;">
+Only .sol or .txt files allowed
+</p>
+
 </div>
 </body>
 </html>
